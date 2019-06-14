@@ -53,22 +53,14 @@ class GitSearch {
    */
   parseData(sourseData) {
     console.log("----> parseData()")
-
-
-    let parsedData = sourseData.items.map(function (item) {
-      return {
+    const { items } = sourseData
+    return items.map( item =>
+       ({
         title: item.name,
         url: item.git_url,
         description: item.description
-      }
-    })
-console.log(parsedData)
-return parsedData
-  }
-
-  searchResult() {
-    let inpResult = document.querySelector('.inpResult')
-    inpResult.innerHTML
+      })
+    )
   }
 }
 export default GitSearch
