@@ -2,20 +2,28 @@ import fetch from 'cross-fetch';
 
 
 class GitSearch {
-
+  constructor(){
+    this.model = []
+  }
   createEvents() {
     let btnSearch = document.querySelector('.btnSearch')
     btnSearch.addEventListener('click', async e => {
 
-      console.log("---->", "createEvents()")
+      console.log("----> createEvents()")
       const data = await this.getData(this.getInputData())
-      this.parseData(data)
+      
+      this.model = this.parseData(data)
+      this.render()
     }, false)
   }
 
+  /**
+   * 
+   * @returns {string}
+   */
   getInputData() {
     let inpSearch = document.querySelector('.inpSearch')
-    console.log("---->", "getInputData()")
+    console.log("----> getInputData()")
     return inpSearch.value
   }
 
@@ -33,6 +41,7 @@ class GitSearch {
       url = `${urlApi}q=${srsearch}&page=${rclimit}&per_page=${per_page}`
     return url
   }
+
   /**
    * 
    * @param {string} key1 
@@ -46,6 +55,7 @@ class GitSearch {
         return response.json();
       })
   }
+
   /**
    * 
    * @param {obj} sourseData
@@ -57,10 +67,18 @@ class GitSearch {
     return items.map( item =>
        ({
         title: item.name,
-        url: item.git_url,
+        url: item.html_url,
         description: item.description
       })
     )
   }
+
+render(){
+console.log(this.model)
+let container = document.querySelector('.container')
+this.model.map(item =>container.innerHTML += `<h1><a href="${item.url}">${item.title}</a></h1><p>${item.description}</p>`)
+
+}
+
 }
 export default GitSearch
