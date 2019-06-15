@@ -2,83 +2,69 @@ import fetch from 'cross-fetch';
 
 
 class GitSearch {
-  constructor(){
+  constructor(config){
     this.model = []
-  }
-  createEvents() {
-    let btnSearch = document.querySelector('.btnSearch')
-    btnSearch.addEventListener('click', async e => {
+    this.selectors = config.selectors
+    this.resultsCount = config.resultsCount
+    this.query = config.defaultQuery
+    this.urlApi = "https://api.github.com/search/repositories?"
 
-      console.log("----> createEvents()")
-      const data = await this.getData(this.getInputData())
+  }
+
+  addEvents(){
+    let inpButton = document.querySelector(this.selectors.button)
+    inpButton.addEventListener('click', _=>{
+      this.getInputData()
+      this.getData().then(e=>{
+        this.prepareData(e)
+        this.render()
+      })
       
-      this.model = this.parseData(data)
-      this.render()
     }, false)
   }
 
   /**
-   * 
    * @returns {string}
    */
-  getInputData() {
-    let inpSearch = document.querySelector('.inpSearch')
-    console.log("----> getInputData()")
-    return inpSearch.value
+  getUrl(){
+    return `${this.urlApi}q=${this.query}&per_page=${this.resultsCount}`
   }
 
   /**
-   * 
-   * @param {string} srsearch 
-   * @param {number} rclimit 
-   * @returns {string}
+   * @returns {Promise}
    */
-  getUrl(srsearch = 'es6', rclimit = 6) {
-
-    console.log("---->", "getUrl()")
-    const urlApi = "https://api.github.com/search/repositories?"
-    let per_page = 10,
-      url = `${urlApi}q=${srsearch}&page=${rclimit}&per_page=${per_page}`
-    return url
+  getData(){
+    return fetch(this.getUrl())
+      .then(response => response.json())
+      .catch(error => console.error(error))
   }
 
-  /**
-   * 
-   * @param {string} key1 
-   * @param {number} key2
-   * @returns {promise} 
-   */
-  getData(key1, key2) {
-    console.log("---->", "getData()")
-    return fetch(this.getUrl(key1, key2))
-      .then(function (response) {
-        return response.json();
-      })
+  getInputData(){
+    let inpSearch = document.querySelector(this.selectors.input)
+    this.query = inpSearch.value
   }
 
-  /**
-   * 
-   * @param {obj} sourseData
-   * @returns {Array} 
-   */
-  parseData(sourseData) {
-    console.log("----> parseData()")
-    const { items } = sourseData
-    return items.map( item =>
-       ({
+  prepareData(objData){
+    this.model = objData.items.map(item=>{
+      var objDataItems = {
         title: item.name,
-        url: item.html_url,
-        description: item.description
-      })
-    )
+        description: item.description,
+        url: item.html_url
+      }
+      return objDataItems
+    })
+    console.log(this.model)
   }
 
-render(){
-console.log(this.model)
-let container = document.querySelector('.container')
-this.model.map(item =>container.innerHTML += `<h1><a href="${item.url}">${item.title}</a></h1><p>${item.description}</p>`)
+  render(){
+    let container = document.querySelector(this.selectors.container)
+    this.model.map(item=> container.innerHTML += `<h1><a href="${item.url}">${item.title}</a></h1><p>${item.description}</p>`)
+  }
 
-}
-
+  init(){
+    this.getData()
+    this.addEvents()
+  }
+  
 }
 export default GitSearch
